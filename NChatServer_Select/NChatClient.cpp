@@ -1,5 +1,7 @@
 #include "NChatClient.h"
 #include "NPacketProcessor.h"
+#include "NLoginManager.h"
+#include "NRoomManager.h"
 #include "Packet.h"
 
 void NChat::NChatClient::ProcessPacket(SDSBuffer& buf)
@@ -45,5 +47,7 @@ void NChat::NChatClient::OnError(int errorNumber)
         /// !!! TEST !!!
         std::cout << "Connection Reset" << std::endl;
     }
+    NRoomManager::GetInstance().OnClose(*this);
+    NLoginManager::GetInstance().OnClose(*this);
     SDSClient::OnError(errorNumber);
 }

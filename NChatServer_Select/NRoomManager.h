@@ -19,5 +19,6 @@ namespace NChat
 
 	public:
 		std::shared_ptr<NChat::NRoom> GetOrNew(NRoom::_RoomNumberType roomNumber);
+		void OnClose(NChatClient& client);
 	};
 }

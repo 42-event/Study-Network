@@ -42,3 +42,11 @@ void NChat::NLoginManager::OnLoginReq(NChat::NChatClient& client, const SDSBuffe
     }
     client.SendPacket(NCommon::PACKET_ID::LOGIN_IN_RES, res);
 }
+
+void NChat::NLoginManager::OnClose(NChatClient& client)
+{
+    synchronized(this->mutex)
+    {
+        this->online.erase(client.GetClientID());
+    }
+}

@@ -95,3 +95,13 @@ std::shared_ptr<NChat::NRoom> NChat::NRoomManager::GetOrNew(NRoom::_RoomNumberTy
     this->rooms.emplace(roomNumber, newRoom);
     return newRoom;
 }
+
+void NChat::NRoomManager::OnClose(NChatClient& client)
+{
+    auto it = this->clients.find(client.GetClientID());
+    if (it != this->clients.end())
+    {
+        auto& room = this->rooms[it->second];
+        room->RemoveUser(client);
+    }
+}
