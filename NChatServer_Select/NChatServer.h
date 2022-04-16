@@ -9,9 +9,12 @@ namespace NChat
 {
     class NChatServer : public SDSServer
     {
+    private:
+        std::atomic_long clientIDCounter;
+
     public:
-        NChatServer(const std::string& host, USHORT port, int tcpBacklog)
-            : SDSServer(host, port, tcpBacklog)
+        inline NChatServer(const std::string& host, USHORT port, int tcpBacklog)
+            : SDSServer(host, port, tcpBacklog), clientIDCounter(0)
         {
             ;
         }

@@ -150,6 +150,10 @@
     <ClCompile Include="NChatClient.cpp" />
     <ClCompile Include="NChatServer.cpp" />
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="NLoginManager.cpp" />
+    <ClCompile Include="NPacketProcessor.cpp" />
+    <ClCompile Include="NRoom.cpp" />
+    <ClCompile Include="NRoomManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SamdasooSelect\SamdasooSelect.vcxproj">
@@ -160,8 +164,13 @@
     <ClInclude Include="ErrorCode.h" />
     <ClInclude Include="NChatClient.h" />
     <ClInclude Include="NChatServer.h" />
+    <ClInclude Include="NLoginManager.h" />
+    <ClInclude Include="NPacketProcessor.h" />
+    <ClInclude Include="NRoom.h" />
+    <ClInclude Include="NRoomManager.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="PacketID.h" />
+    <ClInclude Include="singleton.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

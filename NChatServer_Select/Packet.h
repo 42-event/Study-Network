@@ -24,8 +24,8 @@ namespace NCommon
 	const int MAX_USER_PASSWORD_SIZE = 16;
 	struct PktLogInReq
 	{
-		char szID[MAX_USER_ID_SIZE+1] = { 0, };
-		char szPW[MAX_USER_PASSWORD_SIZE+1] = { 0, };
+		char szID[MAX_USER_ID_SIZE] = { 0, }; //2022-04-16: 크기 변경 (기존: MAX_USER_ID_SIZE+1)
+		char szPW[MAX_USER_PASSWORD_SIZE] = { 0, }; //2022-04-16: 크기 변경 (기존: MAX_USER_PASSWORD_SIZE+1)
 	};
 
 	struct PktLogInRes : PktBase
@@ -74,16 +74,21 @@ namespace NCommon
 	
 
 	//- 룸에 들어가기 요청
-	const int MAX_ROOM_TITLE_SIZE = 16;
+	/*const int MAX_ROOM_TITLE_SIZE = 16;
 	struct PktRoomEnterReq
 	{
 		bool IsCreate;
 		short RoomIndex;
 		wchar_t RoomTitle[MAX_ROOM_TITLE_SIZE + 1];
+	};*/
+	struct PktRoomEnterReq //2022-04-16: 구조체 대체 (기존: <위>)
+	{
+		int RoomIndex;
 	};
 
 	struct PktRoomEnterRes : PktBase
 	{
+		int64_t RoomUserUniqueId; //2022-04-16: 변수 추가
 	};
 
 		

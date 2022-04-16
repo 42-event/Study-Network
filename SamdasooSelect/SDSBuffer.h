@@ -17,7 +17,7 @@ public:
 	}
 
 	template<typename T>
-	const T Get()
+	const T Get() const
 	{
 		std::array<_ValueType, sizeof(T)> tmp;
 		std::memcpy(tmp.data(), this->buf.data(), sizeof(T));
@@ -37,9 +37,9 @@ public:
 		this->buf.insert(buf.end(), tmp.begin(), tmp.end());
 	}
 
-	inline void RawPut(char* in, int len)
+	inline void RawPut(const char* in, int len)
 	{
-		_ValueType* tmp = reinterpret_cast<_ValueType*>(in);
+		const _ValueType* tmp = reinterpret_cast<const _ValueType*>(in);
 		this->buf.insert(buf.end(), &tmp[0], &tmp[len]);
 	}
 
@@ -48,7 +48,7 @@ public:
 		this->buf.erase(this->buf.begin(), std::next(this->buf.begin(), len));
 	}
 
-	inline std::string Dump()
+	inline std::string Dump() const
 	{
 		bool first = true;
 		std::ostringstream result;

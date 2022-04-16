@@ -10,6 +10,8 @@ private:
 	const std::string host;
 	SDSBuffer recvBuffer;
 	SDSBuffer sendBuffer;
+
+protected:
 	std::atomic_bool clientDead = false;
 	std::recursive_mutex writeLock;
 
@@ -40,7 +42,7 @@ public:
 
 	virtual void ProcessPacket(SDSBuffer& buf) = 0;
 
-	inline void SendPacket(char* buf, int len)
+	inline void SendPacket(const char* buf, int len)
 	{
 		synchronized(this->writeLock)
 		{

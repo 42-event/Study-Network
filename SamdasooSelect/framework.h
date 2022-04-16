@@ -9,6 +9,7 @@
 #include <array>
 #include <vector>
 #include <map>
+#include <unordered_map>
 
 //String
 #include <string>
@@ -22,6 +23,7 @@
 //Util
 #include <memory>
 #include <algorithm>
+#include <functional>
 #include <bit>
 #include <chrono>
 using namespace std::chrono_literals;

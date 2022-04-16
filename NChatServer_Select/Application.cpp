@@ -38,11 +38,15 @@ int main()
     }
     catch (const SDSWSException& ex)
     {
-        std::cout << "Crash cause Samdasoo Windows Socket Exception!!" << std::endl;
+        std::cout << "Crash cause Samdasoo Windows Socket Exception!!: " << ex.what() << std::endl;
     }
     catch (const SDSException& ex)
     {
-        std::cout << "Crash cause Samdasoo Exception!!" << std::endl;
+        std::cout << "Crash cause Samdasoo Exception!!: " << ex.what() << std::endl;
+    }
+    catch (const std::exception& ex)
+    {
+        std::cout << "Crash cause Exception!!: " << ex.what() << std::endl;
     }
     catch (...)
     {
