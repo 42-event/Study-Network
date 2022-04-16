@@ -3,6 +3,9 @@
 class SDSSocketUtil
 {
 public:
+	static constexpr int AddressLengthMax = 128; //IPv4=16, IPv6=46
+	static constexpr int BufferSize = 1460; //TCP Size Of Segment Max
+
 	SDSSocketUtil() = delete;
 	~SDSSocketUtil() = delete;
 	SDSSocketUtil(const SDSSocketUtil&) = delete;

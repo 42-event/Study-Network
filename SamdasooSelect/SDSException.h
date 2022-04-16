@@ -7,7 +7,7 @@ public:
     inline explicit SDSException(char const* const message) noexcept
         : std::exception(message)
     {
-
+        ;
     }
 };
 
@@ -21,7 +21,7 @@ public:
     inline explicit SDSWSException(int error) noexcept
         : SDSException("Windows Socket Error"), error(error)
     {
-
+        ;
     }
 
     inline int GetError() const

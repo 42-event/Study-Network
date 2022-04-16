@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="pch.cpp" />
-    <ClCompile Include="SDSApp.cpp" />
     <ClCompile Include="SDSBuffer.cpp" />
     <ClCompile Include="SDSClient.cpp" />
     <ClCompile Include="SDSException.cpp" />
@@ -13,8 +11,7 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="ISDSWorkUnit.h" />
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="SDSApp.h" />
+    <ClInclude Include="SDSSelect.h" />
     <ClInclude Include="SDSBuffer.h" />
     <ClInclude Include="SDSClient.h" />
     <ClInclude Include="SDSException.h" />
@@ -22,8 +19,5 @@
     <ClInclude Include="SDSSocketUtil.h" />
     <ClInclude Include="SDSWorker.h" />
     <ClInclude Include="synchronized.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

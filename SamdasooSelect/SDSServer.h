@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ISDSWorkUnit.h"
+#include "SDSWorker.h"
+#include "SDSClient.h"
 
 class SDSServer : public ISDSWorkUnit
 {
@@ -18,6 +20,7 @@ private:
 	bool commonNonBlocking = true;
 	std::atomic_bool socketCreated = false;
 	std::atomic_bool tcpListened = false;
+	std::shared_ptr<SDSWorker> childWorker;
 
 public:
 	SDSServer(const SDSServer&) = delete;
@@ -26,8 +29,10 @@ public:
 	SDSServer& operator=(SDSServer&&) = delete;
 	SDSServer(const std::string& host, USHORT port, int tcpBacklog);
 	~SDSServer();
+
 	bool CreateSocket();
 	bool Listen();
+	void SetWorker(std::shared_ptr<SDSWorker> worker);
 
 	inline void DisableReUseAddress()
 	{
@@ -37,11 +42,6 @@ public:
 	inline void DisableTcpNoDelay()
 	{
 		this->childTCPNodelay = FALSE;
-	}
-
-	inline SOCKET GetSocket() const override
-	{
-		return this->bossSocket;
 	}
 
 	inline const std::string& GetHost() const
@@ -54,6 +54,11 @@ public:
 		return port;
 	}
 
+	inline SOCKET GetSocket() const override
+	{
+		return this->bossSocket;
+	}
+
 	inline bool IsReadable() const override
 	{
 		return true;
@@ -64,10 +69,35 @@ public:
 		return false;
 	}
 
+	inline bool IsFinished() const override
+	{
+		return false;
+	}
+
 	void OnRead() override;
 
-	constexpr inline void OnWrite() override
+	inline void OnWrite() override
 	{
+		;
+	}
 
+	inline void OnError(int) override
+	{
+		;
+	}
+
+	virtual std::shared_ptr<SDSClient> OnAccept(SOCKET childSocket, const std::string& childHost) = 0;
+};
+
+struct SDSGlobal
+{
+	SDSGlobal()
+	{
+		SDSServer::InitGlobal();
+	}
+
+	~SDSGlobal()
+	{
+		SDSServer::FinalGlobal();
 	}
 };

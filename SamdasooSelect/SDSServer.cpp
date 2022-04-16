@@ -1,8 +1,6 @@
-#include "pch.h"
+#include "SDSSelect.h"
 #include "SDSServer.h"
 
-#include "SDSApp.h"
-#include "SDSClient.h"
 #include "SDSSocketUtil.h"
 #include "SDSException.h"
 
@@ -170,6 +168,11 @@ bool SDSServer::Listen()
 	return true;
 }
 
+void SDSServer::SetWorker(std::shared_ptr<SDSWorker> worker)
+{
+	this->childWorker = worker;
+}
+
 void SDSServer::OnRead()
 {
 	SOCKADDR_IN addr{};
@@ -201,13 +204,10 @@ void SDSServer::OnRead()
 	SDSSocketUtil::SetNonBlocking(childSocket, this->commonNonBlocking);
 
 	///Retrieve Client Host
-	std::array<std::string::value_type, 128> arr{};
+	std::array<std::string::value_type, SDSSocketUtil::AddressLengthMax> arr{};
 	std::string childHost = ::inet_ntop(addr.sin_family, &addr.sin_addr, arr.data(), arr.size());
 
 	//Add ChildSocket To Worker
-	auto client = std::make_shared<SDSClient>(childSocket, childHost);
-	SDSApp::worker->InsertUnit(client);
-
-	/// !!! TEST !!!
-	std::cout << "OnAccept: " << childHost.c_str() << std::endl;
+	auto client = this->OnAccept(childSocket, childHost);
+	this->childWorker->InsertUnit(client);
 }

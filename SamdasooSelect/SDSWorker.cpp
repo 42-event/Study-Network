@@ -1,30 +1,32 @@
-#include "pch.h"
+#include "SDSSelect.h"
 #include "SDSWorker.h"
 
 #include "SDSException.h"
 
 void SDSWorker::Run(SDSWorker* $)
 {
-	while ($->loop.load())
+	while ($->loop)
 	{
 		int nfds = 0;
 		fd_set rfds{};
 		fd_set wfds{};
+		std::map<SOCKET, std::shared_ptr<ISDSWorkUnit>> snapshot;
 		synchronized($->lock)
 		{
-			//ignore nfds?!
-			rfds = $->fds;
-			FD_ZERO(&wfds);
-			for (auto& kvp : $->units)
+			snapshot = $->units;
+		}
+		//ignore nfds?!
+		rfds = $->fds;
+		FD_ZERO(&wfds);
+		for (auto& kvp : snapshot)
+		{
+			if (!kvp.second->IsReadable())
 			{
-				if (!kvp.second->IsReadable())
-				{
-					FD_CLR(kvp.first, &rfds);
-				}
-				if (kvp.second->IsWritable())
-				{
-					FD_SET(kvp.first, &wfds);
-				}
+				FD_CLR(kvp.first, &rfds);
+			}
+			if (kvp.second->IsWritable())
+			{
+				FD_SET(kvp.first, &wfds);
 			}
 		}
 		try
@@ -43,41 +45,38 @@ void SDSWorker::Run(SDSWorker* $)
 				*/
 				throw SDSWSException(WSAGetLastError());
 			}
-			synchronized($->lock)
+			else if (total == 0)
 			{
-				for (auto& kvp : $->units)
+				continue;
+			}
+			for (auto& kvp : snapshot)
+			{
+				try
 				{
-					try
+					if (FD_ISSET(kvp.first, &rfds))
 					{
-						if (FD_ISSET(kvp.first, &rfds))
-						{
-							kvp.second->OnRead();
-						}
-						if (FD_ISSET(kvp.first, &wfds))
-						{
-							kvp.second->OnWrite();
-						}
+						kvp.second->OnRead();
 					}
-					catch (const SDSWSException& ex)
+					if (FD_ISSET(kvp.first, &wfds))
 					{
-						if (ex.GetError() == WSAECONNRESET)
-						{
-							std::cout << "Connection Reset" << std::endl;
-						}
-						else if (IsDebuggerPresent())
-						{
-							//Local_WS: 예외 처리의 지옥에 오신 것을 환영합니다!!
-							DebugBreak();
-						}
+						kvp.second->OnWrite();
 					}
-					catch (const SDSException& ex)
+				}
+				catch (const SDSWSException& ex)
+				{
+					kvp.second->OnError(ex.GetError());
+				}
+				catch (const SDSException& ex)
+				{
+					if (IsDebuggerPresent())
 					{
-						if (IsDebuggerPresent())
-						{
-							//Local: 예외 처리의 지옥에 오신 것을 환영합니다!!
-							DebugBreak();
-						}
+						//Local: 예외 처리의 지옥에 오신 것을 환영합니다!!
+						DebugBreak();
 					}
+				}
+				if (kvp.second->IsFinished())
+				{
+					$->RemoveUnit(kvp.second);
 				}
 			}
 		}

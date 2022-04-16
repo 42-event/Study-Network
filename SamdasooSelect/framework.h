@@ -1,6 +1,7 @@
 #pragma once
 
 //System
+#include <cstddef>
 #include <exception>
 #include <iostream>
 
