@@ -8,25 +8,16 @@ namespace NChat
 	class NRoomManager : public Singleton<NRoomManager>
 	{
 	public:
-		static void OnRoomEnterReq(NChat::NChatClient& client, const SDSBuffer& buf);
-		static void OnRoomLeaveReq(NChat::NChatClient& client, const SDSBuffer& buf);
-		static void OnRoomChatReq(NChat::NChatClient& client, const SDSBuffer& buf);
+		static void OnRoomEnterReq(NChatClient& client, const SDSBuffer& buf);
+		static void OnRoomLeaveReq(NChatClient& client, const SDSBuffer& buf);
+		static void OnRoomChatReq(NChatClient& client, const SDSBuffer& buf);
 
 	private:
-		std::map<long, std::shared_ptr<NChat::NRoom>> rooms;
+		std::map<NChatClient::_ClientIDType, NRoom::_RoomNumberType> clients;
+		std::map<NRoom::_RoomNumberType, std::shared_ptr<NRoom>> rooms;
 		std::recursive_mutex mutex;
 
 	public:
-		std::shared_ptr<NChat::NRoom> GetOrNew(long roomNumber)
-		{
-			auto it = rooms.find(roomNumber);
-			if (it != rooms.end())
-			{
-				return it->second;
-			}
-			auto newRoom = std::make_shared<NChat::NRoom>(roomNumber);
-			rooms.emplace(roomNumber, newRoom);
-			return newRoom;
-		}
+		std::shared_ptr<NChat::NRoom> GetOrNew(NRoom::_RoomNumberType roomNumber);
 	};
 }

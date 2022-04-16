@@ -1,54 +1,97 @@
 #include <SDSSelect.h>
 #include <SDSBuffer.h>
+
+#include "NChatServer.h"
 #include "NChatClient.h"
 #include "NRoomManager.h"
 
-void NChat::NRoomManager::OnRoomEnterReq(NChat::NChatClient& client, const SDSBuffer& buf)
+void NChat::NRoomManager::OnRoomEnterReq(NChatClient& client, const SDSBuffer& buf)
 {
-    if (client.GetState() != NChat::NChatClient::STATE::LOBBY)
+    if (client.GetState() != NChatClient::STATE::LOBBY)
     {
         //Invalid State
         return;
     }
-    auto& man = NChat::NRoomManager::GetInstance();
+
+    auto& man = NRoomManager::GetInstance();
     auto packet = buf.Get<NCommon::PktRoomEnterReq>();
-    NCommon::PktRoomEnterRes res;
-    res.SetError(NCommon::ERROR_CODE::NONE);
-    auto room = man.GetOrNew(packet.RoomIndex);
-    room->AddUser(client);
-    client.SendPacket(NCommon::PACKET_ID::ROOM_ENTER_RES, res);
-    //USER_LIST_NTF to self
-    //Broadcast
+    synchronized(man.mutex)
+    {
+        auto room = man.GetOrNew(packet.RoomIndex);
+        NCommon::PktRoomEnterRes res;
+
+        res.SetError(NCommon::ERROR_CODE::NONE);
+        res.RoomUserUniqueId = static_cast<int64_t>(client.GetClientID());
+        room->AddUser(client);
+        room->SendUserList(client);
+        client.SetState(NChatClient::STATE::ROOM);
+        man.clients.emplace(client.GetClientID(), room->GetRoomNumber());
+        client.SendPacket(NCommon::PACKET_ID::ROOM_ENTER_RES, res);
+    }
 }
 
-void NChat::NRoomManager::OnRoomLeaveReq(NChat::NChatClient& client, const SDSBuffer& buf)
+void NChat::NRoomManager::OnRoomLeaveReq(NChatClient& client, const SDSBuffer& buf)
 {
-    if (client.GetState() != NChat::NChatClient::STATE::ROOM)
+    if (client.GetState() != NChatClient::STATE::ROOM)
     {
         //Invalid State
         return;
     }
-    auto& man = NChat::NRoomManager::GetInstance();
-    auto packet = buf.Get<NCommon::PktRoomLeaveReq>();
-    NCommon::PktRoomLeaveRes res;
-    res.SetError(NCommon::ERROR_CODE::NONE);
-    //room->RemoveUser
-    client.SendPacket(NCommon::PACKET_ID::ROOM_LEAVE_RES, res);
-    //Broadcast
+
+    auto& man = NRoomManager::GetInstance();
+    //auto packet = buf.Get<NCommon::PktRoomLeaveReq>();
+    synchronized(man.mutex)
+    {
+        auto& room = man.rooms[man.clients[client.GetClientID()]];
+        NCommon::PktRoomLeaveRes res;
+
+        res.SetError(NCommon::ERROR_CODE::NONE);
+        room->RemoveUser(client);
+        client.SetState(NChatClient::STATE::LOBBY);
+        man.clients.erase(client.GetClientID());
+        client.SendPacket(NCommon::PACKET_ID::ROOM_LEAVE_RES, res);
+    }
 }
 
-void NChat::NRoomManager::OnRoomChatReq(NChat::NChatClient& client, const SDSBuffer& buf)
+void NChat::NRoomManager::OnRoomChatReq(NChatClient& client, const SDSBuffer& buf)
 {
-    if (client.GetState() != NChat::NChatClient::STATE::ROOM)
+    if (client.GetState() != NChatClient::STATE::ROOM)
     {
         //Invalid State
         return;
     }
-    auto& man = NChat::NRoomManager::GetInstance();
-    auto packet = buf.Get<NCommon::PktRoomChatReq>();
-    NCommon::PktRoomChatRes res;
-    res.SetError(NCommon::ERROR_CODE::NONE);
-    //room->SendChat
-    client.SendPacket(NCommon::PACKET_ID::ROOM_CHAT_RES, res);
-    //Broadcast
+
+    auto& man = NRoomManager::GetInstance();
+    auto msgLen = buf.Get<NChatServer::_MessageLengthType>();
+    if (msgLen < 0 || msgLen > buf.GetCount() - sizeof(msgLen))
+    {
+        //Packet Hack
+        return;
+    }
+    char* rawMsg = new char[msgLen + 1];
+    rawMsg[msgLen] = '\0';
+    std::memcpy(rawMsg, &buf.RawGet()[sizeof(msgLen)], msgLen);
+    synchronized(man.mutex)
+    {
+        auto& room = man.rooms[man.clients[client.GetClientID()]];
+
+        NCommon::PktRoomChatRes res;
+        res.SetError(NCommon::ERROR_CODE::NONE);
+        room->SendChat(client.GetClientID(), rawMsg);
+        client.SendPacket(NCommon::PACKET_ID::ROOM_CHAT_RES, res);
+    }
+    delete[] rawMsg;
+}
+
+//Without Lock
+std::shared_ptr<NChat::NRoom> NChat::NRoomManager::GetOrNew(NRoom::_RoomNumberType roomNumber)
+{
+    auto it = this->rooms.find(roomNumber);
+    if (it != this->rooms.end())
+    {
+        return it->second;
+    }
+    auto newRoom = std::make_shared<NRoom>(roomNumber);
+    this->rooms.emplace(roomNumber, newRoom);
+    return newRoom;
 }

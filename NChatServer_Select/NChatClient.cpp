@@ -1,5 +1,3 @@
-#include <type_traits>
-
 #include "NChatClient.h"
 #include "NPacketProcessor.h"
 #include "Packet.h"
@@ -11,8 +9,9 @@ void NChat::NChatClient::ProcessPacket(SDSBuffer& buf)
 
     while (buf.GetCount() > 0)
     {
-        if (this->recvMode == RECV_MODE::HEAD)
+        switch (this->recvMode)
         {
+        case RECV_MODE::HEAD:
             if (buf.GetCount() < sizeof(this->recvHeader))
             {
                 break;
@@ -20,9 +19,7 @@ void NChat::NChatClient::ProcessPacket(SDSBuffer& buf)
             this->recvHeader = buf.Get<decltype(this->recvHeader)>();
             buf.Delete(sizeof(this->recvHeader));
             this->recvMode = RECV_MODE::DATA;
-        }
-        else
-        {
+        case RECV_MODE::DATA:
             if (buf.GetCount() < this->recvHeader.TotalSize - sizeof(this->recvHeader))
             {
                 break;
@@ -31,6 +28,7 @@ void NChat::NChatClient::ProcessPacket(SDSBuffer& buf)
             NPacketProcessor::Process(*this, id, buf);
             buf.Delete(this->recvHeader.TotalSize - sizeof(this->recvHeader));
             this->recvMode = RECV_MODE::HEAD;
+            break;
         }
     }
 }

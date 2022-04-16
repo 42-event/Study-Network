@@ -24,10 +24,10 @@ public:
 		return std::bit_cast<T>(tmp);
 	}
 
-	inline char* RawGet()
+	inline const char* RawGet() const
 	{
-		_ValueType* tmp = this->buf.data();
-		return reinterpret_cast<char*>(tmp);
+		const _ValueType* tmp = this->buf.data();
+		return reinterpret_cast<const char*>(tmp);
 	}
 
 	template<typename T>

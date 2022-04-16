@@ -6,31 +6,44 @@ namespace NChat
 {
 	class NRoom
 	{
+	public:
+		typedef long _RoomNumberType;
+
 	private:
-		const long roomNumber;
-		std::map<long, NChat::NChatClient&> users;
+		const _RoomNumberType roomNumber;
+		std::map<NChatClient::_ClientIDType, NChatClient&> users;
 		std::recursive_mutex mutex;
 
 	public:
-		NRoom(long roomNumber)
+		inline NRoom(_RoomNumberType roomNumber)
 			: roomNumber(roomNumber)
 		{
 			;
 		}
 
-		inline long GetRoomNumber() const
+		inline _RoomNumberType GetRoomNumber() const
 		{
 			return this->roomNumber;
 		}
 
-		void AddUser(NChat::NChatClient& client);
+		void AddUser(NChatClient& client);
+		void RemoveUser(NChatClient& client);
+		void SendUserList(NChatClient& client);
+		void SendChat(NChatClient::_ClientIDType uid, const std::string& msg);
 
-		inline void RemoveUser(NChat::NChatClient client);
-
-		template <typename T, typename NChat::packet_type_t<T> = true>
-		void Broadcast(const T& t)
+		template <typename T>
+		void Broadcast(NCommon::PACKET_ID id, const T& t, NChatClient::_ClientIDType except = 0)
 		{
-
+			synchronized(this->mutex)
+			{
+				for (auto& user : this->users)
+				{
+					if (user.first != except)
+					{
+						user.second.SendPacket(id, t);
+					}
+				}
+			}
 		}
 	};
 }

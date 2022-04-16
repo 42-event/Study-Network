@@ -74,7 +74,7 @@ void SDSClient::OnWrite()
 {
 	synchronized(this->writeLock)
 	{
-		char* buf = this->sendBuffer.RawGet();
+		const char* buf = this->sendBuffer.RawGet();
 		int len = this->sendBuffer.GetCount();
 		auto sendResult = ::send(this->childSocket, buf, len, 0);
 		if (sendResult == SOCKET_ERROR)

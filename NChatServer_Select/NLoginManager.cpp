@@ -1,16 +1,17 @@
 #include <SDSSelect.h>
 #include <SDSBuffer.h>
+
 #include "NChatClient.h"
 #include "NLoginManager.h"
 
 void NChat::NLoginManager::OnLoginReq(NChat::NChatClient& client, const SDSBuffer& buf)
 {
-    if (client.GetState() != NChat::NChatClient::STATE::LOGIN)
+    if (client.GetState() != NChatClient::STATE::LOGIN)
     {
         //Invalid State
         return;
     }
-    auto& man = NChat::NLoginManager::GetInstance();
+    auto& man = NLoginManager::GetInstance();
     auto packet = buf.Get<NCommon::PktLogInReq>();
     NCommon::PktLogInRes res;
     res.SetError(NCommon::ERROR_CODE::NONE);
@@ -30,13 +31,14 @@ void NChat::NLoginManager::OnLoginReq(NChat::NChatClient& client, const SDSBuffe
         else
         {
             //Wrong Password
-            res.SetError(NCommon::ERROR_CODE::UNASSIGNED_ERROR);
+            res.SetError(NCommon::ERROR_CODE::USER_MGR_ID_DUPLICATION);
         }
-    }
-    if (static_cast<NCommon::ERROR_CODE>(res.ErrorCode) == NCommon::ERROR_CODE::NONE)
-    {
-        man.online.emplace(client.GetClientID(), client);
-        client.SetState(NChat::NChatClient::STATE::LOBBY);
+        if (static_cast<NCommon::ERROR_CODE>(res.ErrorCode) == NCommon::ERROR_CODE::NONE)
+        {
+            man.online.emplace(client.GetClientID(), client);
+            client.SetName(packet.szID);
+            client.SetState(NChatClient::STATE::LOBBY);
+        }
     }
     client.SendPacket(NCommon::PACKET_ID::LOGIN_IN_RES, res);
 }

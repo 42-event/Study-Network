@@ -14,6 +14,6 @@ namespace NChat
 		static std::unordered_map<NCommon::PACKET_ID, std::function<void(NChat::NChatClient&, const SDSBuffer&)>> map;
 
 	public:
-		static void Process(NChat::NChatClient& client, NCommon::PACKET_ID id, const SDSBuffer& buf);
+		static void Process(NChatClient& client, NCommon::PACKET_ID id, const SDSBuffer& buf);
 	};
 }

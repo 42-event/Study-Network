@@ -8,11 +8,11 @@ namespace NChat
 	class NLoginManager : public Singleton<NLoginManager>
 	{
 	public:
-		static void OnLoginReq(NChat::NChatClient& client, const SDSBuffer& buf);
+		static void OnLoginReq(NChatClient& client, const SDSBuffer& buf);
 
 	private:
 		std::unordered_map<std::string, std::string> id2pw; // :(
-		std::unordered_map<long, NChat::NChatClient&> online;
+		std::unordered_map<NChatClient::_ClientIDType, NChatClient&> online;
 		std::recursive_mutex mutex;
 	};
 }

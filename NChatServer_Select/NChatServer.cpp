@@ -2,7 +2,7 @@
 
 std::shared_ptr<SDSClient> NChat::NChatServer::OnAccept(SOCKET childSocket, const std::string& childHost)
 {
-    long id = ++this->clientIDCounter;
+    NChatClient::_ClientIDType id = ++this->clientIDCounter;
     auto client = std::make_shared<NChatClient>(childSocket, childHost, id);
 
     /// !!! TEST !!!
