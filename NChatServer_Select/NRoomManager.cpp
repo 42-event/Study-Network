@@ -68,19 +68,19 @@ void NChat::NRoomManager::OnRoomChatReq(NChatClient& client, const SDSBuffer& bu
         //Packet Hack
         return;
     }
-    char* rawMsg = new char[msgLen + 1];
-    rawMsg[msgLen] = '\0';
-    std::memcpy(rawMsg, &buf.RawGet()[sizeof(msgLen)], msgLen);
+    auto* msgPtr = &buf.RawGet()[sizeof(msgLen)];
+    std::vector<std::string::value_type> rawMsg;
+    rawMsg.insert(rawMsg.begin(), &msgPtr[0], &msgPtr[msgLen]);
+    rawMsg.push_back('\0');
     synchronized(man.mutex)
     {
         auto& room = man.rooms[man.clients[client.GetClientID()]];
 
         NCommon::PktRoomChatRes res;
         res.SetError(NCommon::ERROR_CODE::NONE);
-        room->SendChat(client.GetClientID(), rawMsg);
+        room->SendChat(client.GetClientID(), rawMsg.data());
         client.SendPacket(NCommon::PACKET_ID::ROOM_CHAT_RES, res);
     }
-    delete[] rawMsg;
 }
 
 //Without Lock
