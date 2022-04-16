@@ -47,7 +47,7 @@ void NChat::NRoom::SendUserList(NChatClient& client)
             packet.Put<int64_t>(uid);
             packet.Put<int8_t>(nameLen);
             packet.RawPut(name.c_str(), nameLen);
-            if (--userCount > 0)
+            if (--userCount == 0)
             {
                 // :(
                 //users.size() > int8_t_max
