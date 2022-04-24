@@ -13,6 +13,7 @@ namespace NChat
 	private:
 		std::unordered_map<std::string, std::string> id2pw; // :(
 		std::unordered_map<NChatClient::_ClientIDType, NChatClient&> online;
+		std::unordered_map<std::string, NChatClient::_ClientIDType> name2client;
 		std::recursive_mutex mutex;
 
 	public:
