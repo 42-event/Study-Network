@@ -12,7 +12,6 @@ namespace NChat
 	private:
 		const _RoomNumberType roomNumber;
 		std::map<NChatClient::_ClientIDType, NChatClient&> users;
-		std::recursive_mutex mutex;
 
 	public:
 		inline NRoom(_RoomNumberType roomNumber)
@@ -34,14 +33,11 @@ namespace NChat
 		template <typename T>
 		void Broadcast(NCommon::PACKET_ID id, const T& t, NChatClient::_ClientIDType except = 0)
 		{
-			synchronized(this->mutex)
+			for (auto& user : this->users)
 			{
-				for (auto& user : this->users)
+				if (user.first != except)
 				{
-					if (user.first != except)
-					{
-						user.second.SendPacket(id, t);
-					}
+					user.second.SendPacket(id, t);
 				}
 			}
 		}
