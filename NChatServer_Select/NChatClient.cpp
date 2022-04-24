@@ -21,6 +21,7 @@ void NChat::NChatClient::ProcessPacket(SDSBuffer& buf)
             this->recvHeader = buf.Get<decltype(this->recvHeader)>();
             buf.Delete(sizeof(this->recvHeader));
             this->recvMode = RECV_MODE::DATA;
+            [[fallthrough]];
         case RECV_MODE::DATA:
             if (buf.GetCount() < this->recvHeader.TotalSize - sizeof(this->recvHeader))
             {
